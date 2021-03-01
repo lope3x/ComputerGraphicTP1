@@ -103,6 +103,64 @@ class GraphicAlgorithms:
             x += 1
             plotCirclePoints(x, y)
 
+    xmin = -2
+    xmax = 5
+    ymin = 1
+    ymax = 6
+
+    def cohen_sutherland(self, x1, x2, y1, y2):
+        def regionCode(x, y):
+            code = 0
+            if x < self.xmin:
+                code += 1
+            if x > self.xmax:
+                code += 2
+            if y < self.ymin:
+                code += 4
+            if y > self.ymax:
+                code += 8
+            return code
+
+        def getBitValue(value, bit_position):
+            bit_value = [1, 2, 4, 8]
+            return 1 if (value & bit_value[bit_position] == bit_value[bit_position]) else 0
+
+        aceite = False
+        feito = False
+        while not feito:
+            c1 = regionCode(x1, y1)
+            c2 = regionCode(x2, y2)
+            if c1 == 0 and c2 == 0:
+                aceite = True
+                feito = True
+            elif c1 & c2 != 0:
+                feito = True
+            else:
+                if c1 != 0:
+                    cfora = c1
+                else:
+                    cfora = c2
+                if getBitValue(cfora, 0) == 1:
+                    xint = self.xmin
+                    yint = y1 + (y2 - y1) * (self.xmin - x1) / (x2 - x1)
+                elif getBitValue(cfora, 1) == 1:
+                    xint = self.xmax
+                    yint = y1 + (y2 - y1) * (self.xmax - x1) / (x2 - x1)
+                elif getBitValue(cfora, 2) == 1:
+                    yint = self.ymin
+                    xint = x1 + (x2 - x1) * (self.ymin - y1) / (y2 - y1)
+                elif getBitValue(cfora, 3) == 1:
+                    yint = self.ymax
+                    xint = x1 + (x2 - x1) * (self.ymax - y1) / (y2 - y1)
+                if c1 == cfora:
+                    x1 = xint
+                    y1 = yint
+                else:
+                    x2 = xint
+                    y2 = yint
+        if aceite:
+            pass  # desenhar linha aqui
+
 
 if __name__ == '__main__':
     pass
