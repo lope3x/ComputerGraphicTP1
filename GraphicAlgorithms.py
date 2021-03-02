@@ -1,10 +1,24 @@
-from Point import Point
+import numpy
 
 
 class GraphicAlgorithms:
 
-    def __init__(self, drawPixel):
+    def __init__(self, drawPixel, sizeX, sizeY):
         self.drawPixel = drawPixel
+        print(type(sizeX), type(sizeY))
+        self.rows = sizeX
+        self.cols = sizeY
+        self.matrix = numpy.zeros((sizeX, sizeY))
+
+    def cleanMatrix(self):
+        self.matrix = numpy.zeros((self.rows, self.cols))
+
+
+    def drawMatrixOnScreen(self):
+        for x in range(0, self.rows):
+            for y in range(0, self.cols):
+                if self.matrix[x][y] == 1:
+                    self.drawPixel(x, y)
 
     def dda(self, point1, point2):
         x1 = point1.x
@@ -23,10 +37,13 @@ class GraphicAlgorithms:
         x = x1
         y = y1
         self.drawPixel(round(x), round(y))
+        self.matrix[round(x)][round(y)] = 1
         for k in range(1, steps):
             x = x + x_incr
             y = y + y_incr
             self.drawPixel(round(x), round(y))
+            self.matrix[round(x)][round(y)] = 1
+        # self.drawMatrixOnScreen()
 
     def bresenhamDrawLine(self, point1, point2):
         x1 = point1.x
@@ -35,8 +52,7 @@ class GraphicAlgorithms:
         y2 = point2.y
         dx = x2 - x1
         dy = y2 - y1
-        incrx = 0
-        incry = 0
+
         if dx >= 0:
             incrx = 1
         else:

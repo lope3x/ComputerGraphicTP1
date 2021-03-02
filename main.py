@@ -21,7 +21,7 @@ class MainGui:
         # Variables
         self.numberOfClicks = 0
         self.command = Command.NONE
-        self.ga = GraphicAlgorithms(self.drawPixelAt)
+        self.ga = GraphicAlgorithms(self.drawPixelAt,GetSystemMetrics(0), GetSystemMetrics(1))
         self.firstPoint = None
         self.secondPoint = None
 
@@ -61,7 +61,7 @@ class MainGui:
                                      text="Clean Screen",
                                      width=Metrics.buttonSize,
                                      relief="raised",
-                                     command=lambda: self.canvas.delete("all"),
+                                     command=lambda: self.handleOnClickCleanScreen(),
                                      padx=Metrics.paddingMenuButtonsX,
                                      pady=Metrics.paddingMenuButtonsY
                                      ).pack()
@@ -70,6 +70,9 @@ class MainGui:
         self.command = algorithm
         self.cleanPoints()
 
+    def handleOnClickCleanScreen(self):
+        self.ga.cleanMatrix()
+        self.canvas.delete("all")
     def cleanToggledButtons(self):
         self.ddaButton.btn.config(relief="raise")
         self.bresenamLineButton.btn.config(relief="raise")
