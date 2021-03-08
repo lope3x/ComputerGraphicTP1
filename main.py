@@ -14,7 +14,8 @@ class MainGui:
     def __init__(self):
         # Screen
         self.window = tk.Tk()
-        self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
+        # self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
+        self.window.geometry(f"{600}x{600}")
         self.configureWidgets()
         self.events()
 
@@ -59,15 +60,15 @@ class MainGui:
                                                  algorithm=Command.BRESENHAMCIRCLE,
                                                  cleanButtons=self.cleanToggledButtons)
         self.cohenSutherlandButton = ToggleButton(self.menuFrame,
-                                                 text="Recorte CS",
-                                                 command=self.handleOnClickMenuButton,
-                                                 algorithm=Command.COHENSUTHERLAND,
-                                                 cleanButtons=self.cleanToggledButtons)
+                                                  text="Recorte CS",
+                                                  command=self.handleOnClickMenuButton,
+                                                  algorithm=Command.COHENSUTHERLAND,
+                                                  cleanButtons=self.cleanToggledButtons)
         self.cleanButton = tk.Button(self.menuFrame,
                                      text="Clean Screen",
                                      width=Metrics.buttonSize,
                                      relief="raised",
-                                     command=self.handleOnClickCleanScreen,
+                                     command=self.cleanScreen,
                                      padx=Metrics.paddingMenuButtonsX,
                                      pady=Metrics.paddingMenuButtonsY,
                                      ).pack()
@@ -76,14 +77,24 @@ class MainGui:
         self.command = algorithm
         self.cleanPoints()
 
-    def handleOnClickCleanScreen(self):
+    def cleanScreen(self):
         self.canvas.delete("all")
         self.geometryObjects.clear()
+
+    def reRenderScreen(self):
+        for geometryObject in self.geometryObjects:
+            if geometryObject.type == GeometryType.dddLine:
+                self.ga.dda(geometryObject.point1, geometryObject.point2)
+            elif geometryObject.type == GeometryType.bresenhamLine:
+                self.ga.bresenhamDrawLine(geometryObject.point1, geometryObject.point2)
+            else:
+                self.ga.bresenhamDrawCircle(geometryObject.point1, geometryObject.radius)
 
     def cleanToggledButtons(self):
         self.ddaButton.btn.config(relief="raise")
         self.bresenamLineButton.btn.config(relief="raise")
         self.bresenamCircleButton.btn.config(relief="raise")
+        self.cohenSutherlandButton.btn.config(relief="raise")
         self.command = Command.NONE
 
     def drawPixelAt(self, x, y):
@@ -116,9 +127,33 @@ class MainGui:
                 self.geometryObjects.append(bresenhamCircle)
                 self.ga.bresenhamDrawCircle(self.firstPoint, radius)
             elif self.command == Command.COHENSUTHERLAND:
-                print("First",self.firstPoint.x, self.firstPoint.y)
-                print("Second",self.secondPoint.x, self.secondPoint.y)
-
+                xmin = self.firstPoint.x if self.firstPoint.x < self.secondPoint.x else self.secondPoint.x
+                ymin = self.firstPoint.y if self.firstPoint.y < self.secondPoint.y else self.secondPoint.y
+                xmax = self.firstPoint.x if self.firstPoint.x > self.secondPoint.x else self.secondPoint.x
+                ymax = self.firstPoint.y if self.firstPoint.y > self.secondPoint.y else self.secondPoint.y
+                newGeometryObjectList = []
+                for geometryObject in self.geometryObjects:
+                    try:
+                        if geometryObject.type == GeometryType.dddLine:
+                            x1, y1, x2, y2 = self.ga.cohen_sutherland(geometryObject.point1, geometryObject.point2,
+                                                                      xmin, ymin, xmax, ymax)
+                            point1 = Point(x1, y1)
+                            point2 = Point(x2, y2)
+                            newGeometryObject = GeometryObject(GeometryType.dddLine, point1, point2)
+                            newGeometryObjectList.append(newGeometryObject)
+                        elif geometryObject.type == GeometryType.bresenhamLine:
+                            x1, y1, x2, y2 = self.ga.cohen_sutherland(geometryObject.point1, geometryObject.point2,
+                                                                      xmin, ymin, xmax, ymax)
+                            point1 = Point(x1, y1)
+                            point2 = Point(x2, y2)
+                            newGeometryObject = GeometryObject(GeometryType.bresenhamLine, point1, point2)
+                            newGeometryObjectList.append(newGeometryObject)
+                    except:
+                        print("é isso n ta legal ")
+                        pass
+                self.cleanScreen()
+                self.geometryObjects = newGeometryObjectList
+                self.reRenderScreen()
             elif self.command == Command.NONE:
                 pass
             self.cleanPoints()

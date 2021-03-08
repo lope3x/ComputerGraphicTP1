@@ -102,21 +102,20 @@ class GraphicAlgorithms:
             x += 1
             plotCirclePoints(x, y)
 
-    xmin = -2
-    xmax = 5
-    ymin = 1
-    ymax = 6
-
-    def cohen_sutherland(self, x1, x2, y1, y2):
+    def cohen_sutherland(self, point1, point2, xmin, ymin, xmax, ymax):
+        x1 = point1.x
+        y1 = point1.y
+        x2 = point2.x
+        y2 = point2.y
         def regionCode(x, y):
             code = 0
-            if x < self.xmin:
+            if x < xmin:
                 code += 1
-            if x > self.xmax:
+            if x > xmax:
                 code += 2
-            if y < self.ymin:
+            if y < ymin:
                 code += 4
-            if y > self.ymax:
+            if y > ymax:
                 code += 8
             return code
 
@@ -140,17 +139,17 @@ class GraphicAlgorithms:
                 else:
                     cfora = c2
                 if getBitValue(cfora, 0) == 1:
-                    xint = self.xmin
-                    yint = y1 + (y2 - y1) * (self.xmin - x1) / (x2 - x1)
+                    xint = xmin
+                    yint = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1)
                 elif getBitValue(cfora, 1) == 1:
-                    xint = self.xmax
-                    yint = y1 + (y2 - y1) * (self.xmax - x1) / (x2 - x1)
+                    xint = xmax
+                    yint = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1)
                 elif getBitValue(cfora, 2) == 1:
-                    yint = self.ymin
-                    xint = x1 + (x2 - x1) * (self.ymin - y1) / (y2 - y1)
+                    yint = ymin
+                    xint = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1)
                 elif getBitValue(cfora, 3) == 1:
-                    yint = self.ymax
-                    xint = x1 + (x2 - x1) * (self.ymax - y1) / (y2 - y1)
+                    yint = ymax
+                    xint = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1)
                 if c1 == cfora:
                     x1 = xint
                     y1 = yint
@@ -158,7 +157,43 @@ class GraphicAlgorithms:
                     x2 = xint
                     y2 = yint
         if aceite:
-            pass  # desenhar linha aqui
+            return round(x1), round(y1), round(x2), round(y2)
+
+    u1 = 0.0
+    u2 = 1.0
+
+    def liang_barsky(self, x1, y1, x2, y2):
+        def cliptest(p, q):
+            result = True
+            if p < 0.0:
+                r = q / p
+                if r > self.u2:
+                    result = False
+                elif r > self.u1:
+                    self.u1 = r
+            elif p > 0.0:
+                r = q / p
+                if r < self.u1:
+                    result = False
+                elif r < self.u2:
+                    self.u2 = r
+            elif q < 0.0:
+                result = False
+            return result
+
+        dx = x2 - x1
+        dy = y2 - y1
+        if cliptest(-dx, x1 - self.xmin):
+            if cliptest(dx, self.xmax - x1):
+                if cliptest(-dy, y1 - self.ymin):
+                    if cliptest(dy, self.ymax - y1):
+                        if self.u2 < 1.0:
+                            x2 = x1 + self.u2 * dx
+                            y2 = y1 + self.u2 * dy
+                        if self.u1 > 0.0:
+                            x1 = x1 + self.u1 * dx
+                            y1 = y1 + self.u1 * dy
+                        print(x1, y1, x2, y2)
 
 
 if __name__ == '__main__':
