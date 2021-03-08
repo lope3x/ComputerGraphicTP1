@@ -7,10 +7,7 @@ class GraphicAlgorithms:
         self.drawPixel = drawPixel
 
     def dda(self, point1, point2):
-        x1 = point1.x
-        y1 = point1.y
-        x2 = point2.x
-        y2 = point2.y
+        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
         dx = x2 - x1
         dy = y2 - y1
         steps = 0
@@ -29,10 +26,7 @@ class GraphicAlgorithms:
             self.drawPixel(round(x), round(y))
 
     def bresenhamDrawLine(self, point1, point2):
-        x1 = point1.x
-        y1 = point1.y
-        x2 = point2.x
-        y2 = point2.y
+        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
         dx = x2 - x1
         dy = y2 - y1
 
@@ -103,10 +97,8 @@ class GraphicAlgorithms:
             plotCirclePoints(x, y)
 
     def cohen_sutherland(self, point1, point2, xmin, ymin, xmax, ymax):
-        x1 = point1.x
-        y1 = point1.y
-        x2 = point2.x
-        y2 = point2.y
+        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
+
         def regionCode(x, y):
             code = 0
             if x < xmin:
@@ -162,7 +154,9 @@ class GraphicAlgorithms:
     u1 = 0.0
     u2 = 1.0
 
-    def liang_barsky(self, x1, y1, x2, y2):
+    def liang_barsky(self, point1, point2, xmin, ymin, xmax, ymax):
+        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
+
         def cliptest(p, q):
             result = True
             if p < 0.0:
@@ -183,17 +177,28 @@ class GraphicAlgorithms:
 
         dx = x2 - x1
         dy = y2 - y1
-        if cliptest(-dx, x1 - self.xmin):
-            if cliptest(dx, self.xmax - x1):
-                if cliptest(-dy, y1 - self.ymin):
-                    if cliptest(dy, self.ymax - y1):
+        if cliptest(-dx, x1 - xmin):
+            if cliptest(dx, xmax - x1):
+                if cliptest(-dy, y1 - ymin):
+                    if cliptest(dy, ymax - y1):
                         if self.u2 < 1.0:
                             x2 = x1 + self.u2 * dx
                             y2 = y1 + self.u2 * dy
                         if self.u1 > 0.0:
                             x1 = x1 + self.u1 * dx
                             y1 = y1 + self.u1 * dy
-                        print(x1, y1, x2, y2)
+                        self.u1 = 0.0
+                        self.u2 = 1.0
+                        return round(x1), round(y1), round(x2), round(y2)
+        self.u1 = 0.0
+        self.u2 = 1.0
+
+    def unwrapPoints(self, point1, point2):
+        x1 = point1.x
+        y1 = point1.y
+        x2 = point2.x
+        y2 = point2.y
+        return x1, x2, y1, y2
 
 
 if __name__ == '__main__':

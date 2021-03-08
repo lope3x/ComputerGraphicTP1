@@ -15,7 +15,7 @@ class MainGui:
         # Screen
         self.window = tk.Tk()
         # self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
-        self.window.geometry(f"{600}x{600}")
+        self.window.geometry(f"{800}x{600}")
         self.configureWidgets()
         self.events()
 
@@ -64,6 +64,11 @@ class MainGui:
                                                   command=self.handleOnClickMenuButton,
                                                   algorithm=Command.COHENSUTHERLAND,
                                                   cleanButtons=self.cleanToggledButtons)
+        self.liangBarskyButton = ToggleButton(self.menuFrame,
+                                                  text="Recorte LB",
+                                                  command=self.handleOnClickMenuButton,
+                                                  algorithm=Command.LIANGBARSKY,
+                                                  cleanButtons=self.cleanToggledButtons)
         self.cleanButton = tk.Button(self.menuFrame,
                                      text="Clean Screen",
                                      width=Metrics.buttonSize,
@@ -95,6 +100,7 @@ class MainGui:
         self.bresenamLineButton.btn.config(relief="raise")
         self.bresenamCircleButton.btn.config(relief="raise")
         self.cohenSutherlandButton.btn.config(relief="raise")
+        self.liangBarskyButton.btn.config(relief="raise")
         self.command = Command.NONE
 
     def drawPixelAt(self, x, y):
@@ -127,10 +133,7 @@ class MainGui:
                 self.geometryObjects.append(bresenhamCircle)
                 self.ga.bresenhamDrawCircle(self.firstPoint, radius)
             elif self.command == Command.COHENSUTHERLAND:
-                xmin = self.firstPoint.x if self.firstPoint.x < self.secondPoint.x else self.secondPoint.x
-                ymin = self.firstPoint.y if self.firstPoint.y < self.secondPoint.y else self.secondPoint.y
-                xmax = self.firstPoint.x if self.firstPoint.x > self.secondPoint.x else self.secondPoint.x
-                ymax = self.firstPoint.y if self.firstPoint.y > self.secondPoint.y else self.secondPoint.y
+                xmax, xmin, ymax, ymin = self.getClippingLimits()
                 newGeometryObjectList = []
                 for geometryObject in self.geometryObjects:
                     try:
@@ -154,9 +157,41 @@ class MainGui:
                 self.cleanScreen()
                 self.geometryObjects = newGeometryObjectList
                 self.reRenderScreen()
+            elif self.command == Command.LIANGBARSKY:
+                xmax, xmin, ymax, ymin = self.getClippingLimits()
+                newGeometryObjectList = []
+                for geometryObject in self.geometryObjects:
+                    try:
+                        if geometryObject.type == GeometryType.dddLine:
+                            x1, y1, x2, y2 = self.ga.liang_barsky(geometryObject.point1, geometryObject.point2,
+                                                                      xmin, ymin, xmax, ymax)
+                            point1 = Point(x1, y1)
+                            point2 = Point(x2, y2)
+                            newGeometryObject = GeometryObject(GeometryType.dddLine, point1, point2)
+                            newGeometryObjectList.append(newGeometryObject)
+                        elif geometryObject.type == GeometryType.bresenhamLine:
+                            x1, y1, x2, y2 = self.ga.liang_barsky(geometryObject.point1, geometryObject.point2,
+                                                                      xmin, ymin, xmax, ymax)
+                            point1 = Point(x1, y1)
+                            point2 = Point(x2, y2)
+                            newGeometryObject = GeometryObject(GeometryType.bresenhamLine, point1, point2)
+                            newGeometryObjectList.append(newGeometryObject)
+                    except:
+                        print("é isso n ta legal ")
+                        pass
+                self.cleanScreen()
+                self.geometryObjects = newGeometryObjectList
+                self.reRenderScreen()
             elif self.command == Command.NONE:
                 pass
             self.cleanPoints()
+
+    def getClippingLimits(self):
+        xmin = self.firstPoint.x if self.firstPoint.x < self.secondPoint.x else self.secondPoint.x
+        ymin = self.firstPoint.y if self.firstPoint.y < self.secondPoint.y else self.secondPoint.y
+        xmax = self.firstPoint.x if self.firstPoint.x > self.secondPoint.x else self.secondPoint.x
+        ymax = self.firstPoint.y if self.firstPoint.y > self.secondPoint.y else self.secondPoint.y
+        return xmax, xmin, ymax, ymin
 
     def shouldDrawOnScreen(self):
         return self.firstPoint is not None and \

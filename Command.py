@@ -7,3 +7,4 @@ class Command(Enum):
     BRESENHAMLINE = 2
     BRESENHAMCIRCLE = 3
     COHENSUTHERLAND = 4
+    LIANGBARSKY = 5
