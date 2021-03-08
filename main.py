@@ -4,7 +4,7 @@ import tkinter as tk
 from Command import Command
 from GraphicAlgorithms import GraphicAlgorithms
 from Metrics import Metrics
-from Point import Point
+from Geometry import *
 from ToggleButton import ToggleButton
 from win32api import GetSystemMetrics
 
@@ -24,6 +24,7 @@ class MainGui:
         self.ga = GraphicAlgorithms(self.drawPixelAt)
         self.firstPoint = None
         self.secondPoint = None
+        self.geometryObjects = []
 
         self.canvas.pack()
         self.window.mainloop()
@@ -57,18 +58,27 @@ class MainGui:
                                                  command=self.handleOnClickMenuButton,
                                                  algorithm=Command.BRESENHAMCIRCLE,
                                                  cleanButtons=self.cleanToggledButtons)
+        self.cohenSutherlandButton = ToggleButton(self.menuFrame,
+                                                 text="Recorte CS",
+                                                 command=self.handleOnClickMenuButton,
+                                                 algorithm=Command.COHENSUTHERLAND,
+                                                 cleanButtons=self.cleanToggledButtons)
         self.cleanButton = tk.Button(self.menuFrame,
                                      text="Clean Screen",
                                      width=Metrics.buttonSize,
                                      relief="raised",
-                                     command=lambda: self.canvas.delete("all"),
+                                     command=self.handleOnClickCleanScreen,
                                      padx=Metrics.paddingMenuButtonsX,
-                                     pady=Metrics.paddingMenuButtonsY
+                                     pady=Metrics.paddingMenuButtonsY,
                                      ).pack()
 
     def handleOnClickMenuButton(self, algorithm):
         self.command = algorithm
         self.cleanPoints()
+
+    def handleOnClickCleanScreen(self):
+        self.canvas.delete("all")
+        self.geometryObjects.clear()
 
     def cleanToggledButtons(self):
         self.ddaButton.btn.config(relief="raise")
@@ -92,15 +102,23 @@ class MainGui:
                 self.secondPoint = point
 
         if self.shouldDrawOnScreen():
-            # Debug print
-            print(self.firstPoint.x, self.firstPoint.y, self.secondPoint.x, self.secondPoint.y)
             if self.command == Command.DDA:
+                ddaLine = GeometryObject(GeometryType.dddLine, self.firstPoint, self.secondPoint)
+                self.geometryObjects.append(ddaLine)
                 self.ga.dda(self.firstPoint, self.secondPoint)
             elif self.command == Command.BRESENHAMLINE:
+                bresenhamLine = GeometryObject(GeometryType.bresenhamLine, self.firstPoint, self.secondPoint)
+                self.geometryObjects.append(bresenhamLine)
                 self.ga.bresenhamDrawLine(self.firstPoint, self.secondPoint)
             elif self.command == Command.BRESENHAMCIRCLE:
                 radius = self.distanceBetweenTwoPoints(self.firstPoint, self.secondPoint)
+                bresenhamCircle = GeometryObject(GeometryType.bresenhamCircle, self.firstPoint, radius=radius)
+                self.geometryObjects.append(bresenhamCircle)
                 self.ga.bresenhamDrawCircle(self.firstPoint, radius)
+            elif self.command == Command.COHENSUTHERLAND:
+                print("First",self.firstPoint.x, self.firstPoint.y)
+                print("Second",self.secondPoint.x, self.secondPoint.y)
+
             elif self.command == Command.NONE:
                 pass
             self.cleanPoints()

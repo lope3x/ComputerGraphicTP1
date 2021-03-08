@@ -6,3 +6,4 @@ class Command(Enum):
     DDA = 1
     BRESENHAMLINE = 2
     BRESENHAMCIRCLE = 3
+    COHENSUTHERLAND = 4
