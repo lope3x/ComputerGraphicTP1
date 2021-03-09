@@ -39,8 +39,8 @@ class MainGui:
         self.configure_menu()
         self.canvas = tk.Canvas(self.window,
                                 bg="white",
-                                width=1000,
-                                height=570)
+                                width=Metrics.canvas_width,
+                                height=Metrics.canvas_height)
         self.canvas.pack()
 
     def configure_menu(self):

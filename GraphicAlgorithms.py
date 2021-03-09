@@ -1,5 +1,6 @@
 import math
 
+from Metrics import Metrics
 from Geometry import *
 
 
@@ -209,16 +210,32 @@ class GraphicAlgorithms:
     @staticmethod
     def get_scaled_object(geometry_object, value, dim):
         if geometry_object.type == GeometryType.bresenhamCircle:
-            radius = round(geometry_object.radius*value)
+            radius = round(geometry_object.radius * value)
             return GeometryObject(geometry_object.type, point1=geometry_object.point1, radius=radius)
         if dim == "x":
-            point1 = Point(round(geometry_object.point1.x * value), geometry_object.point1.y)
-            point2 = Point(round(geometry_object.point2.x * value), geometry_object.point2.y)
+            center_x, center_y = GraphicAlgorithms.get_line_center(geometry_object)
+
+            point1_x = round((geometry_object.point1.x - center_x) * value) + center_x
+            point2_x = (round((geometry_object.point2.x - center_x) * value)) + center_x
+
+            point1 = Point(point1_x, geometry_object.point1.y)
+            point2 = Point(point2_x, geometry_object.point2.y)
         else:
-            point1 = Point(geometry_object.point1.x, round(geometry_object.point1.y * value))
-            point2 = Point(geometry_object.point2.x, round(geometry_object.point2.y * value))
+            center_x, center_y = GraphicAlgorithms.get_line_center(geometry_object)
+
+            point1_y = round((geometry_object.point1.y - center_y) * value) + center_y
+            point2_y = (round((geometry_object.point2.y - center_y) * value)) + center_y
+
+            point1 = Point(geometry_object.point1.x, point1_y)
+            point2 = Point(geometry_object.point2.x, point2_y)
 
         return GeometryObject(geometry_object.type, point1, point2)
+
+    @staticmethod
+    def get_line_center(geometry_object):
+        center_x = round((geometry_object.point1.x + geometry_object.point2.x) / 2)
+        center_y = round((geometry_object.point1.y + geometry_object.point2.y) / 2)
+        return center_x, center_y
 
     @staticmethod
     def get_translated_geometry_object(geometry_object, value, dim):
