@@ -9,6 +9,7 @@ from ToggleButton import ToggleButton
 from win32api import GetSystemMetrics
 
 
+# noinspection PyAttributeOutsideInit
 class MainGui:
 
     def __init__(self):
@@ -16,193 +17,182 @@ class MainGui:
         self.window = tk.Tk()
         # self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
         self.window.geometry(f"{800}x{600}")
-        self.configureWidgets()
-        self.events()
+        self.configure_widgets()
+        self.bind_events()
 
         # Variables
         self.numberOfClicks = 0
         self.command = Command.NONE
-        self.ga = GraphicAlgorithms(self.drawPixelAt)
+        self.ga = GraphicAlgorithms(self.draw_pixel_at)
         self.firstPoint = None
         self.secondPoint = None
-        self.geometryObjects = []
+        self.geometry_objects_list = []
 
         self.canvas.pack()
         self.window.mainloop()
 
-    def configureWidgets(self):
-        self.configureMenu()
+    def configure_widgets(self):
+        self.configure_menu()
         self.canvas = tk.Canvas(self.window,
                                 bg="white",
                                 width=GetSystemMetrics(0),
                                 height=GetSystemMetrics(1))
         self.canvas.pack()
 
-    def configureMenu(self):
-        self.menuFrame = tk.Frame(self.window)
-        self.configureMenuButtons()
-        self.menuFrame.pack()
+    def configure_menu(self):
+        self.menu_frame = tk.Frame(self.window)
+        self.configure_menu_buttons()
+        self.menu_frame.pack()
 
-    def configureMenuButtons(self):
-        self.ddaButton = ToggleButton(self.menuFrame,
-                                      text="DDA",
-                                      command=self.handleOnClickMenuButton,
-                                      algorithm=Command.DDA,
-                                      cleanButtons=self.cleanToggledButtons)
-        self.bresenamLineButton = ToggleButton(self.menuFrame,
-                                               text="BresenhamLine",
-                                               command=self.handleOnClickMenuButton,
-                                               algorithm=Command.BRESENHAMLINE,
-                                               cleanButtons=self.cleanToggledButtons)
-        self.bresenamCircleButton = ToggleButton(self.menuFrame,
-                                                 text="BresenhamCircle",
-                                                 command=self.handleOnClickMenuButton,
-                                                 algorithm=Command.BRESENHAMCIRCLE,
-                                                 cleanButtons=self.cleanToggledButtons)
-        self.cohenSutherlandButton = ToggleButton(self.menuFrame,
-                                                  text="Recorte CS",
-                                                  command=self.handleOnClickMenuButton,
-                                                  algorithm=Command.COHENSUTHERLAND,
-                                                  cleanButtons=self.cleanToggledButtons)
-        self.liangBarskyButton = ToggleButton(self.menuFrame,
-                                                  text="Recorte LB",
-                                                  command=self.handleOnClickMenuButton,
-                                                  algorithm=Command.LIANGBARSKY,
-                                                  cleanButtons=self.cleanToggledButtons)
-        self.cleanButton = tk.Button(self.menuFrame,
-                                     text="Clean Screen",
-                                     width=Metrics.buttonSize,
-                                     relief="raised",
-                                     command=self.cleanScreen,
-                                     padx=Metrics.paddingMenuButtonsX,
-                                     pady=Metrics.paddingMenuButtonsY,
-                                     ).pack()
+    def configure_menu_buttons(self):
+        self.dda_button = ToggleButton(self.menu_frame,
+                                       text="DDA",
+                                       command=self.handle_on_click_menu_button,
+                                       algorithm=Command.DDA_LINE,
+                                       cleanButtons=self.clean_toggled_buttons)
+        self.bresenham_line_button = ToggleButton(self.menu_frame,
+                                                  text="BresenhamLine",
+                                                  command=self.handle_on_click_menu_button,
+                                                  algorithm=Command.BRESENHAM_LINE,
+                                                  cleanButtons=self.clean_toggled_buttons)
+        self.bresenham_circle_button = ToggleButton(self.menu_frame,
+                                                    text="BresenhamCircle",
+                                                    command=self.handle_on_click_menu_button,
+                                                    algorithm=Command.BRESENHAM_CIRCLE,
+                                                    cleanButtons=self.clean_toggled_buttons)
+        self.cohen_sutherland_button = ToggleButton(self.menu_frame,
+                                                    text="Recorte CS",
+                                                    command=self.handle_on_click_menu_button,
+                                                    algorithm=Command.COHEN_SUTHERLAND_CLIP,
+                                                    cleanButtons=self.clean_toggled_buttons)
+        self.liang_barsky_button = ToggleButton(self.menu_frame,
+                                                text="Recorte LB",
+                                                command=self.handle_on_click_menu_button,
+                                                algorithm=Command.LIANG_BARSKY_CLIP,
+                                                cleanButtons=self.clean_toggled_buttons)
+        self.clean_button = tk.Button(self.menu_frame,
+                                      text="Clean Screen",
+                                      width=Metrics.buttonSize,
+                                      relief="raised",
+                                      command=self.clean_screen,
+                                      padx=Metrics.paddingMenuButtonsX,
+                                      pady=Metrics.paddingMenuButtonsY,
+                                      ).pack()
 
-    def handleOnClickMenuButton(self, algorithm):
+    def handle_on_click_menu_button(self, algorithm):
         self.command = algorithm
-        self.cleanPoints()
+        self.clean_click_points()
 
-    def cleanScreen(self):
+    def clean_screen(self):
         self.canvas.delete("all")
-        self.geometryObjects.clear()
+        self.geometry_objects_list.clear()
 
-    def reRenderScreen(self):
-        for geometryObject in self.geometryObjects:
+    def render_geometry_objects_on_screen(self):
+        for geometryObject in self.geometry_objects_list:
             if geometryObject.type == GeometryType.dddLine:
-                self.ga.dda(geometryObject.point1, geometryObject.point2)
+                self.ga.draw_dda_line(geometryObject.point1, geometryObject.point2)
             elif geometryObject.type == GeometryType.bresenhamLine:
-                self.ga.bresenhamDrawLine(geometryObject.point1, geometryObject.point2)
+                self.ga.draw_bresenham_line(geometryObject.point1, geometryObject.point2)
             else:
-                self.ga.bresenhamDrawCircle(geometryObject.point1, geometryObject.radius)
+                self.ga.draw_bresenham_circle(geometryObject.point1, geometryObject.radius)
 
-    def cleanToggledButtons(self):
-        self.ddaButton.btn.config(relief="raise")
-        self.bresenamLineButton.btn.config(relief="raise")
-        self.bresenamCircleButton.btn.config(relief="raise")
-        self.cohenSutherlandButton.btn.config(relief="raise")
-        self.liangBarskyButton.btn.config(relief="raise")
+    def clean_toggled_buttons(self):
+        self.dda_button.btn.config(relief="raise")
+        self.bresenham_line_button.btn.config(relief="raise")
+        self.bresenham_circle_button.btn.config(relief="raise")
+        self.cohen_sutherland_button.btn.config(relief="raise")
+        self.liang_barsky_button.btn.config(relief="raise")
         self.command = Command.NONE
 
-    def drawPixelAt(self, x, y):
-        # self.canvas.create_rectangle((x,y)*2)
+    def draw_pixel_at(self, x, y):
         self.canvas.create_line(x, y, x + 1, y)
 
-    def events(self):
+    def bind_events(self):
         # self.canvas.bind('<B1-Motion>', lambda event: self.drawPixelAt(event.x, event.y))
-        self.canvas.bind('<ButtonRelease-1>', lambda event: self.handleOnClickScreen(Point(event.x, event.y)))
+        self.canvas.bind('<ButtonRelease-1>', lambda event: self.handle_on_click_screen(Point(event.x, event.y)))
 
-    def handleOnClickScreen(self, point):
+    def handle_on_click_screen(self, point):
         if self.command != Command.NONE:
             if self.firstPoint is None:
                 self.firstPoint = point
             else:
                 self.secondPoint = point
 
-        if self.shouldDrawOnScreen():
-            if self.command == Command.DDA:
-                ddaLine = GeometryObject(GeometryType.dddLine, self.firstPoint, self.secondPoint)
-                self.geometryObjects.append(ddaLine)
-                self.ga.dda(self.firstPoint, self.secondPoint)
-            elif self.command == Command.BRESENHAMLINE:
-                bresenhamLine = GeometryObject(GeometryType.bresenhamLine, self.firstPoint, self.secondPoint)
-                self.geometryObjects.append(bresenhamLine)
-                self.ga.bresenhamDrawLine(self.firstPoint, self.secondPoint)
-            elif self.command == Command.BRESENHAMCIRCLE:
-                radius = self.distanceBetweenTwoPoints(self.firstPoint, self.secondPoint)
-                bresenhamCircle = GeometryObject(GeometryType.bresenhamCircle, self.firstPoint, radius=radius)
-                self.geometryObjects.append(bresenhamCircle)
-                self.ga.bresenhamDrawCircle(self.firstPoint, radius)
-            elif self.command == Command.COHENSUTHERLAND:
-                xmax, xmin, ymax, ymin = self.getClippingLimits()
-                newGeometryObjectList = []
-                for geometryObject in self.geometryObjects:
-                    try:
-                        if geometryObject.type == GeometryType.dddLine:
-                            x1, y1, x2, y2 = self.ga.cohen_sutherland(geometryObject.point1, geometryObject.point2,
-                                                                      xmin, ymin, xmax, ymax)
-                            point1 = Point(x1, y1)
-                            point2 = Point(x2, y2)
-                            newGeometryObject = GeometryObject(GeometryType.dddLine, point1, point2)
-                            newGeometryObjectList.append(newGeometryObject)
-                        elif geometryObject.type == GeometryType.bresenhamLine:
-                            x1, y1, x2, y2 = self.ga.cohen_sutherland(geometryObject.point1, geometryObject.point2,
-                                                                      xmin, ymin, xmax, ymax)
-                            point1 = Point(x1, y1)
-                            point2 = Point(x2, y2)
-                            newGeometryObject = GeometryObject(GeometryType.bresenhamLine, point1, point2)
-                            newGeometryObjectList.append(newGeometryObject)
-                    except:
-                        print("é isso n ta legal ")
-                        pass
-                self.cleanScreen()
-                self.geometryObjects = newGeometryObjectList
-                self.reRenderScreen()
-            elif self.command == Command.LIANGBARSKY:
-                xmax, xmin, ymax, ymin = self.getClippingLimits()
-                newGeometryObjectList = []
-                for geometryObject in self.geometryObjects:
-                    try:
-                        if geometryObject.type == GeometryType.dddLine:
-                            x1, y1, x2, y2 = self.ga.liang_barsky(geometryObject.point1, geometryObject.point2,
-                                                                      xmin, ymin, xmax, ymax)
-                            point1 = Point(x1, y1)
-                            point2 = Point(x2, y2)
-                            newGeometryObject = GeometryObject(GeometryType.dddLine, point1, point2)
-                            newGeometryObjectList.append(newGeometryObject)
-                        elif geometryObject.type == GeometryType.bresenhamLine:
-                            x1, y1, x2, y2 = self.ga.liang_barsky(geometryObject.point1, geometryObject.point2,
-                                                                      xmin, ymin, xmax, ymax)
-                            point1 = Point(x1, y1)
-                            point2 = Point(x2, y2)
-                            newGeometryObject = GeometryObject(GeometryType.bresenhamLine, point1, point2)
-                            newGeometryObjectList.append(newGeometryObject)
-                    except:
-                        print("é isso n ta legal ")
-                        pass
-                self.cleanScreen()
-                self.geometryObjects = newGeometryObjectList
-                self.reRenderScreen()
+        if self.should_draw_on_screen():
+            if self.command == Command.DDA_LINE:
+                self.handle_click_dda_line()
+            elif self.command == Command.BRESENHAM_LINE:
+                self.handle_click_bresenham_line()
+            elif self.command == Command.BRESENHAM_CIRCLE:
+                self.handle_click_bresenham_circle()
+            elif self.command == Command.COHEN_SUTHERLAND_CLIP:
+                self.handle_click_clip(Command.COHEN_SUTHERLAND_CLIP)
+            elif self.command == Command.LIANG_BARSKY_CLIP:
+                self.handle_click_clip(Command.LIANG_BARSKY_CLIP)
             elif self.command == Command.NONE:
                 pass
-            self.cleanPoints()
+            self.clean_click_points()
 
-    def getClippingLimits(self):
-        xmin = self.firstPoint.x if self.firstPoint.x < self.secondPoint.x else self.secondPoint.x
-        ymin = self.firstPoint.y if self.firstPoint.y < self.secondPoint.y else self.secondPoint.y
-        xmax = self.firstPoint.x if self.firstPoint.x > self.secondPoint.x else self.secondPoint.x
-        ymax = self.firstPoint.y if self.firstPoint.y > self.secondPoint.y else self.secondPoint.y
-        return xmax, xmin, ymax, ymin
+    def handle_click_clip(self, algorithm):
+        new_geometry_object_list = []
+        for geometry_object in self.geometry_objects_list:
+            if geometry_object.type != GeometryType.bresenhamCircle:
+                try:
+                    new_geometry_object = self.compute_new_clipped_line(geometry_object, algorithm)
+                    new_geometry_object_list.append(new_geometry_object)
+                except:
+                    pass
+        self.clean_screen()
+        self.geometry_objects_list = new_geometry_object_list
+        self.render_geometry_objects_on_screen()
 
-    def shouldDrawOnScreen(self):
+    def compute_new_clipped_line(self, geometry_object, algorithm):
+        x_max, x_min, y_max, y_min = self.get_clipping_limits()
+        if algorithm == Command.COHEN_SUTHERLAND_CLIP:
+            x1, y1, x2, y2 = self.ga.compute_clipped_line_cohen_sutherland(geometry_object.point1,
+                                                                       geometry_object.point2,
+                                                                       x_min, y_min, x_max,
+                                                                       y_max)
+        else:
+            x1, y1, x2, y2 = self.ga.compute_clipped_line_liang_barsky(geometry_object.point1,
+                                                                           geometry_object.point2,
+                                                                           x_min, y_min, x_max,
+                                                                           y_max)
+        point1 = Point(x1, y1)
+        point2 = Point(x2, y2)
+        new_geometry_object = GeometryObject(geometry_object.type, point1, point2)
+        return new_geometry_object
+
+    def handle_click_bresenham_circle(self):
+        radius = GraphicAlgorithms.compute_distance_between_two_points(self.firstPoint, self.secondPoint)
+        bresenham_circle = GeometryObject(GeometryType.bresenhamCircle, self.firstPoint, radius=radius)
+        self.geometry_objects_list.append(bresenham_circle)
+        self.ga.draw_bresenham_circle(self.firstPoint, radius)
+
+    def handle_click_bresenham_line(self):
+        bresenham_line = GeometryObject(GeometryType.bresenhamLine, self.firstPoint, self.secondPoint)
+        self.geometry_objects_list.append(bresenham_line)
+        self.ga.draw_bresenham_line(self.firstPoint, self.secondPoint)
+
+    def handle_click_dda_line(self):
+        dda_line = GeometryObject(GeometryType.dddLine, self.firstPoint, self.secondPoint)
+        self.geometry_objects_list.append(dda_line)
+        self.ga.draw_dda_line(self.firstPoint, self.secondPoint)
+
+    def get_clipping_limits(self):
+        x_min = self.firstPoint.x if self.firstPoint.x < self.secondPoint.x else self.secondPoint.x
+        y_min = self.firstPoint.y if self.firstPoint.y < self.secondPoint.y else self.secondPoint.y
+        x_max = self.firstPoint.x if self.firstPoint.x > self.secondPoint.x else self.secondPoint.x
+        y_max = self.firstPoint.y if self.firstPoint.y > self.secondPoint.y else self.secondPoint.y
+        return x_max, x_min, y_max, y_min
+
+    def should_draw_on_screen(self):
         return self.firstPoint is not None and \
                self.secondPoint is not None and \
                self.command != Command.NONE
 
-    def cleanPoints(self):
+    def clean_click_points(self):
         self.firstPoint = self.secondPoint = None
-
-    def distanceBetweenTwoPoints(self, point1, point2):
-        return math.sqrt(math.pow(point2.x - point1.x, 2) + math.pow(point2.y - point1.y, 2))
 
 
 def main():

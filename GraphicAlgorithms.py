@@ -1,92 +1,93 @@
+import math
+
 from Geometry import Point
 
 
 class GraphicAlgorithms:
 
-    def __init__(self, drawPixel):
-        self.drawPixel = drawPixel
+    def __init__(self, draw_pixel):
+        self.draw_pixel = draw_pixel
 
-    def dda(self, point1, point2):
-        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
+    def draw_dda_line(self, point1, point2):
+        x1, x2, y1, y2 = self.unwrap_points(point1, point2)
         dx = x2 - x1
         dy = y2 - y1
-        steps = 0
         if abs(dx) > abs(dy):
             steps = abs(dx)
         else:
             steps = abs(dy)
-        x_incr = dx / steps
-        y_incr = dy / steps
+        x_increment = dx / steps
+        y_increment = dy / steps
         x = x1
         y = y1
-        self.drawPixel(round(x), round(y))
+        self.draw_pixel(round(x), round(y))
         for k in range(1, steps):
-            x = x + x_incr
-            y = y + y_incr
-            self.drawPixel(round(x), round(y))
+            x = x + x_increment
+            y = y + y_increment
+            self.draw_pixel(round(x), round(y))
 
-    def bresenhamDrawLine(self, point1, point2):
-        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
+    def draw_bresenham_line(self, point1, point2):
+        x1, x2, y1, y2 = self.unwrap_points(point1, point2)
         dx = x2 - x1
         dy = y2 - y1
 
         if dx >= 0:
-            incrx = 1
+            x_increment = 1
         else:
-            incrx = -1
+            x_increment = -1
             dx = -dx
         if dy >= 0:
-            incry = 1
+            y_increment = 1
         else:
-            incry = -1
+            y_increment = -1
             dy = -dy
         x = x1
         y = y1
-        self.drawPixel(x, y)
+        self.draw_pixel(x, y)
 
         if dy < dx:
             p = 2 * dy - dx
             const1 = 2 * dy
             const2 = 2 * (dy - dx)
             for i in range(dx):
-                x += incrx
+                x += x_increment
                 if p < 0:
                     p += const1
                 else:
-                    y += incry
+                    y += y_increment
                     p += const2
-                self.drawPixel(x, y)
+                self.draw_pixel(x, y)
         else:
             p = 2 * dx - dy
             const1 = 2 * dx
             const2 = 2 * (dx - dy)
             for i in range(dy):
-                y += incry
+                y += y_increment
                 if p < 0:
                     p += const1
                 else:
-                    x += incrx
+                    x += x_increment
                     p += const2
-                self.drawPixel(x, y)
+                self.draw_pixel(x, y)
 
-    def bresenhamDrawCircle(self, point, radius):
+    def draw_bresenham_circle(self, point, radius):
         xc = point.x
         yc = point.y
 
-        def plotCirclePoints(x, y):
-            self.drawPixel(xc + x, yc + y)
-            self.drawPixel(xc - x, yc + y)
-            self.drawPixel(xc + x, yc - y)
-            self.drawPixel(xc - x, yc - y)
-            self.drawPixel(xc + y, yc + x)
-            self.drawPixel(xc - y, yc + x)
-            self.drawPixel(xc + y, yc - x)
-            self.drawPixel(xc - y, yc - x)
+        def draw_circle_points(x, y):
+            self.draw_pixel(xc + x, yc + y)
+            self.draw_pixel(xc - x, yc + y)
+            self.draw_pixel(xc + x, yc - y)
+            self.draw_pixel(xc - x, yc - y)
+            self.draw_pixel(xc + y, yc + x)
+            self.draw_pixel(xc - y, yc + x)
+            self.draw_pixel(xc + y, yc - x)
+            self.draw_pixel(xc - y, yc - x)
 
         x = 0
         y = radius
         p = 3 - 2 * radius
-        plotCirclePoints(x, y)
+        draw_circle_points(x, y)
         while x < y:
             if p < 0:
                 p = p + 4 * x + 6
@@ -94,12 +95,12 @@ class GraphicAlgorithms:
                 p = p + 4 * (x - y) + 10
                 y -= 1
             x += 1
-            plotCirclePoints(x, y)
+            draw_circle_points(x, y)
 
-    def cohen_sutherland(self, point1, point2, xmin, ymin, xmax, ymax):
-        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
+    def compute_clipped_line_cohen_sutherland(self, point1, point2, xmin, ymin, xmax, ymax):
+        x1, x2, y1, y2 = self.unwrap_points(point1, point2)
 
-        def regionCode(x, y):
+        def compute_region_code(x, y):
             code = 0
             if x < xmin:
                 code += 1
@@ -111,35 +112,35 @@ class GraphicAlgorithms:
                 code += 8
             return code
 
-        def getBitValue(value, bit_position):
+        def get_bit_value_at_position(value, bit_position):
             bit_value = [1, 2, 4, 8]
             return 1 if (value & bit_value[bit_position] == bit_value[bit_position]) else 0
 
-        aceite = False
-        feito = False
-        while not feito:
-            c1 = regionCode(x1, y1)
-            c2 = regionCode(x2, y2)
+        accepted = False
+        done = False
+        while not done:
+            c1 = compute_region_code(x1, y1)
+            c2 = compute_region_code(x2, y2)
             if c1 == 0 and c2 == 0:
-                aceite = True
-                feito = True
+                accepted = True
+                done = True
             elif c1 & c2 != 0:
-                feito = True
+                done = True
             else:
                 if c1 != 0:
                     cfora = c1
                 else:
                     cfora = c2
-                if getBitValue(cfora, 0) == 1:
+                if get_bit_value_at_position(cfora, 0) == 1:
                     xint = xmin
                     yint = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1)
-                elif getBitValue(cfora, 1) == 1:
+                elif get_bit_value_at_position(cfora, 1) == 1:
                     xint = xmax
                     yint = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1)
-                elif getBitValue(cfora, 2) == 1:
+                elif get_bit_value_at_position(cfora, 2) == 1:
                     yint = ymin
                     xint = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1)
-                elif getBitValue(cfora, 3) == 1:
+                elif get_bit_value_at_position(cfora, 3) == 1:
                     yint = ymax
                     xint = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1)
                 if c1 == cfora:
@@ -148,16 +149,16 @@ class GraphicAlgorithms:
                 else:
                     x2 = xint
                     y2 = yint
-        if aceite:
+        if accepted:
             return round(x1), round(y1), round(x2), round(y2)
 
     u1 = 0.0
     u2 = 1.0
 
-    def liang_barsky(self, point1, point2, xmin, ymin, xmax, ymax):
-        x1, x2, y1, y2 = self.unwrapPoints(point1, point2)
+    def compute_clipped_line_liang_barsky(self, point1, point2, xmin, ymin, xmax, ymax):
+        x1, x2, y1, y2 = self.unwrap_points(point1, point2)
 
-        def cliptest(p, q):
+        def clip_test(p, q):
             result = True
             if p < 0.0:
                 r = q / p
@@ -177,10 +178,10 @@ class GraphicAlgorithms:
 
         dx = x2 - x1
         dy = y2 - y1
-        if cliptest(-dx, x1 - xmin):
-            if cliptest(dx, xmax - x1):
-                if cliptest(-dy, y1 - ymin):
-                    if cliptest(dy, ymax - y1):
+        if clip_test(-dx, x1 - xmin):
+            if clip_test(dx, xmax - x1):
+                if clip_test(-dy, y1 - ymin):
+                    if clip_test(dy, ymax - y1):
                         if self.u2 < 1.0:
                             x2 = x1 + self.u2 * dx
                             y2 = y1 + self.u2 * dy
@@ -193,12 +194,17 @@ class GraphicAlgorithms:
         self.u1 = 0.0
         self.u2 = 1.0
 
-    def unwrapPoints(self, point1, point2):
+    @staticmethod
+    def unwrap_points(point1, point2):
         x1 = point1.x
         y1 = point1.y
         x2 = point2.x
         y2 = point2.y
         return x1, x2, y1, y2
+
+    @staticmethod
+    def compute_distance_between_two_points(point1, point2):
+        return math.sqrt(math.pow(point2.x - point1.x, 2) + math.pow(point2.y - point1.y, 2))
 
 
 if __name__ == '__main__':

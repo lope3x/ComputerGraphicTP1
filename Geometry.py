@@ -8,8 +8,8 @@ class Point:
 
 
 class GeometryObject:
-    def __init__(self, type, point1, point2=None, radius=None):
-        self.type = type
+    def __init__(self, type_object, point1, point2=None, radius=None):
+        self.type = type_object
         self.point1 = point1
         self.point2 = point2
         self.radius = radius

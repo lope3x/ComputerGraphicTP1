@@ -3,8 +3,8 @@ from enum import Enum
 
 class Command(Enum):
     NONE = 0
-    DDA = 1
-    BRESENHAMLINE = 2
-    BRESENHAMCIRCLE = 3
-    COHENSUTHERLAND = 4
-    LIANGBARSKY = 5
+    DDA_LINE = 1
+    BRESENHAM_LINE = 2
+    BRESENHAM_CIRCLE = 3
+    COHEN_SUTHERLAND_CLIP = 4
+    LIANG_BARSKY_CLIP = 5
