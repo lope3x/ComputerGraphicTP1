@@ -1,6 +1,6 @@
 import math
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import simpledialog, messagebox
 
 from Command import Command
 from GraphicAlgorithms import GraphicAlgorithms
@@ -109,7 +109,8 @@ class MainGui:
             self.dim = dim
         elif self.dim != dim:
             self.dim = dim
-            self.geometry_objects_list = list(self.temporary_geometry_object_list)
+            if len(self.geometry_objects_list)==len(self.temporary_geometry_object_list):
+                self.geometry_objects_list = list(self.temporary_geometry_object_list)
         if len(self.temporary_geometry_object_list) != len(self.geometry_objects_list):
             self.temporary_geometry_object_list = [0 for _ in range(0, len(self.geometry_objects_list))]
         for i in range(0, len(self.geometry_objects_list)):
@@ -120,6 +121,9 @@ class MainGui:
         self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)
 
     def handle_on_click_scaling_button(self):
+        if self.command != Command.NONE:
+            messagebox.showerror(title="Error", message="Desmarque todos os botoes para utilizar este comando")
+            return
         scaling_dialog = tk.Toplevel(self.window)
         scaling_dialog.title("Escala")
         scaling_dialog.geometry("200x200")
@@ -152,26 +156,53 @@ class MainGui:
         scale_button_done.pack()
 
     def handle_on_click_translation_button(self):
+        if self.command != Command.NONE:
+            messagebox.showerror(title="Error", message="Desmarque todos os botoes para utilizar este comando")
+            return
         translation_dialog = tk.Toplevel(self.window)
-        translation_dialog.title("Translação")
-        translation_dialog.geometry("200x100")
+        translation_dialog.title("Escala")
+        translation_dialog.geometry("200x200")
         tk.Label(translation_dialog,
-                 text="Digite os valores X e Y de translação").grid(row=0, columnspan=2)
-        tk.Label(translation_dialog, text="X").grid(row=1)
-        tk.Label(translation_dialog, text="Y").grid(row=2)
-        x_entry = tk.Entry(translation_dialog)
-        x_entry.grid(row=1, column=1)
-        y_entry = tk.Entry(translation_dialog)
-        y_entry.grid(row=2, column=1)
-        tk.Button(translation_dialog,
-                  text="Transladar",
-                  command=lambda: self.handle_on_click_translation_dialog_submit(x_entry, y_entry)).grid(row=3,
-                                                                                                         columnspan=2)
+                 text="Mova os sliders para transladar").pack()
+        tk.Label(translation_dialog, text="Translação em X").pack()
+        translate_x_slider = tk.Scale(translation_dialog,
+                                      from_=-200,
+                                      to=200,
+                                      orient=tk.HORIZONTAL,
+                                      length="200",
+                                      command=lambda value: self.handle_on_slider_translation_slide(value, "x"))
+        translate_x_slider.set(1)
+        translate_x_slider.pack()
+        tk.Label(translation_dialog, text="Translação em Y").pack()
+        translate_y_slider = tk.Scale(translation_dialog,
+                                      from_=-200,
+                                      to=200,
+                                      orient=tk.HORIZONTAL,
+                                      length="200",
+                                      command=lambda value: self.handle_on_slider_translation_slide(value, "y"))
+        translate_y_slider.set(1)
+        translate_y_slider.pack()
+        scale_button_done = tk.Button(translation_dialog,
+                                      text="Confirmar Translação",
+                                      command=lambda: self.handle_on_click_confirm_scaling(translation_dialog))
 
-    def handle_on_click_translation_dialog_submit(self, x_entry, y_entry):
-        x = int(x_entry.get())
-        y = int(y_entry.get())
-        self.translate_geometry_objects(x, y)
+        scale_button_done.pack()
+
+    def handle_on_slider_translation_slide(self, value, dim):
+        if self.dim is None:
+            self.dim = dim
+        elif self.dim != dim:
+            self.dim = dim
+            if len(self.geometry_objects_list) == len(self.temporary_geometry_object_list):
+                self.geometry_objects_list = list(self.temporary_geometry_object_list)
+        if len(self.temporary_geometry_object_list) != len(self.geometry_objects_list):
+            self.temporary_geometry_object_list = [0 for _ in range(0, len(self.geometry_objects_list))]
+        for i in range(0, len(self.geometry_objects_list)):
+            geometry_object = self.geometry_objects_list[i]
+            translated_geometry_object = GraphicAlgorithms.get_translated_geometry_object(geometry_object, int(value), dim)
+            self.temporary_geometry_object_list[i] = translated_geometry_object
+        self.canvas.delete("all")
+        self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)
 
     def translate_geometry_objects(self, x, y):
         new_geometry_object_list = []

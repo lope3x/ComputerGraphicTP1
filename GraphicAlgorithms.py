@@ -221,13 +221,20 @@ class GraphicAlgorithms:
         return GeometryObject(geometry_object.type, point1, point2)
 
     @staticmethod
-    def get_translated_geometry_object(geometry_object, tx, ty):
+    def get_translated_geometry_object(geometry_object, value, dim):
         if geometry_object.type == GeometryType.bresenhamCircle:
-            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
+            if dim == "x":
+                point1 = Point(geometry_object.point1.x + value, geometry_object.point1.y)
+            else:
+                point1 = Point(geometry_object.point1.x, geometry_object.point1.y + value)
             return GeometryObject(geometry_object.type, point1, radius=geometry_object.radius)
         else:
-            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
-            point2 = Point(geometry_object.point2.x + tx, geometry_object.point2.y + ty)
+            if dim == "x":
+                point1 = Point(geometry_object.point1.x + value, geometry_object.point1.y)
+                point2 = Point(geometry_object.point2.x + value, geometry_object.point2.y)
+            else:
+                point1 = Point(geometry_object.point1.x, geometry_object.point1.y + value)
+                point2 = Point(geometry_object.point2.x, geometry_object.point2.y + value)
             return GeometryObject(geometry_object.type, point1, point2)
 
 
