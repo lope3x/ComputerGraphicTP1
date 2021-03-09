@@ -1,5 +1,6 @@
 import math
 import tkinter as tk
+from tkinter import simpledialog
 
 from Command import Command
 from GraphicAlgorithms import GraphicAlgorithms
@@ -16,7 +17,8 @@ class MainGui:
         # Screen
         self.window = tk.Tk()
         # self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
-        self.window.geometry(f"{800}x{600}")
+        self.window.geometry(f"{900}x{600}")
+        self.window.title("Paint")
         self.configure_widgets()
         self.bind_events()
 
@@ -35,8 +37,8 @@ class MainGui:
         self.configure_menu()
         self.canvas = tk.Canvas(self.window,
                                 bg="white",
-                                width=GetSystemMetrics(0),
-                                height=GetSystemMetrics(1))
+                                width=900,
+                                height=600)
         self.canvas.pack()
 
     def configure_menu(self):
@@ -70,6 +72,14 @@ class MainGui:
                                                 command=self.handle_on_click_menu_button,
                                                 algorithm=Command.LIANG_BARSKY_CLIP,
                                                 cleanButtons=self.clean_toggled_buttons)
+        self.translation_button = tk.Button(self.menu_frame,
+                                            text="Translação",
+                                            width=Metrics.buttonSize,
+                                            relief="raised",
+                                            command=self.handle_on_click_translation_button,
+                                            padx=Metrics.paddingMenuButtonsX,
+                                            pady=Metrics.paddingMenuButtonsY,
+                                            ).pack(side="left")
         self.clean_button = tk.Button(self.menu_frame,
                                       text="Clean Screen",
                                       width=Metrics.buttonSize,
@@ -78,6 +88,48 @@ class MainGui:
                                       padx=Metrics.paddingMenuButtonsX,
                                       pady=Metrics.paddingMenuButtonsY,
                                       ).pack()
+
+    def handle_on_click_translation_button(self):
+        translation_dialog = tk.Toplevel(self.window)
+        translation_dialog.title("Translação")
+        translation_dialog.geometry("200x100")
+        tk.Label(translation_dialog,
+                 text="Digite os valores X e Y de translação").grid(row=0, columnspan=2)
+        tk.Label(translation_dialog, text="X").grid(row=1)
+        tk.Label(translation_dialog, text="Y").grid(row=2)
+        x_entry = tk.Entry(translation_dialog)
+        x_entry.grid(row=1, column=1)
+        y_entry = tk.Entry(translation_dialog)
+        y_entry.grid(row=2, column=1)
+        tk.Button(translation_dialog,
+                  text="Transladar",
+                  command=lambda: self.handle_on_click_translation_dialog_submit(x_entry, y_entry)).grid(row=3,
+                                                                                                         columnspan=2)
+
+    def handle_on_click_translation_dialog_submit(self, x_entry, y_entry):
+        x = int(x_entry.get())
+        y = int(y_entry.get())
+        self.translate_geometry_objects(x, y)
+
+    def translate_geometry_objects(self, x, y):
+        new_geometry_object_list = []
+        for geometry_object in self.geometry_objects_list:
+            new_geometry_object_list.append(self.get_translate_geometry_object(geometry_object, x, y))
+        self.render_geometry_objects_list_on_screen(new_geometry_object_list)
+
+    def render_geometry_objects_list_on_screen(self, new_geometry_object_list):
+        self.clean_screen()
+        self.geometry_objects_list = new_geometry_object_list
+        self.render_geometry_objects_on_screen()
+
+    def get_translate_geometry_object(self, geometry_object, tx, ty):
+        if geometry_object.type == GeometryType.bresenhamCircle:
+            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
+            return GeometryObject(geometry_object.type, point1, radius=geometry_object.radius)
+        else:
+            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
+            point2 = Point(geometry_object.point2.x + tx, geometry_object.point2.y + ty)
+            return GeometryObject(geometry_object.type, point1, point2)
 
     def handle_on_click_menu_button(self, algorithm):
         self.command = algorithm
@@ -142,22 +194,20 @@ class MainGui:
                     new_geometry_object_list.append(new_geometry_object)
                 except:
                     pass
-        self.clean_screen()
-        self.geometry_objects_list = new_geometry_object_list
-        self.render_geometry_objects_on_screen()
+        self.render_geometry_objects_list_on_screen(new_geometry_object_list)
 
     def compute_new_clipped_line(self, geometry_object, algorithm):
         x_max, x_min, y_max, y_min = self.get_clipping_limits()
         if algorithm == Command.COHEN_SUTHERLAND_CLIP:
             x1, y1, x2, y2 = self.ga.compute_clipped_line_cohen_sutherland(geometry_object.point1,
-                                                                       geometry_object.point2,
-                                                                       x_min, y_min, x_max,
-                                                                       y_max)
-        else:
-            x1, y1, x2, y2 = self.ga.compute_clipped_line_liang_barsky(geometry_object.point1,
                                                                            geometry_object.point2,
                                                                            x_min, y_min, x_max,
                                                                            y_max)
+        else:
+            x1, y1, x2, y2 = self.ga.compute_clipped_line_liang_barsky(geometry_object.point1,
+                                                                       geometry_object.point2,
+                                                                       x_min, y_min, x_max,
+                                                                       y_max)
         point1 = Point(x1, y1)
         point2 = Point(x2, y2)
         new_geometry_object = GeometryObject(geometry_object.type, point1, point2)
