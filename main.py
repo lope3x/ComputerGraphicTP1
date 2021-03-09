@@ -105,20 +105,23 @@ class MainGui:
         self.render_geometry_objects_list_on_screen_and_overwrite_old_list(list(self.temporary_geometry_object_list))
 
     def handle_on_slider_scaling_slide(self, value, dim):
-        if self.dim is None:
-            self.dim = dim
-        elif self.dim != dim:
-            self.dim = dim
-            if len(self.geometry_objects_list)==len(self.temporary_geometry_object_list):
-                self.geometry_objects_list = list(self.temporary_geometry_object_list)
-        if len(self.temporary_geometry_object_list) != len(self.geometry_objects_list):
-            self.temporary_geometry_object_list = [0 for _ in range(0, len(self.geometry_objects_list))]
+        self.valid_temporary_geometry_object_list(dim)
         for i in range(0, len(self.geometry_objects_list)):
             geometry_object = self.geometry_objects_list[i]
             scaled_geometry_object = GraphicAlgorithms.get_scaled_object(geometry_object, float(value), dim)
             self.temporary_geometry_object_list[i] = scaled_geometry_object
         self.canvas.delete("all")
         self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)
+
+    def valid_temporary_geometry_object_list(self, dim):
+        if self.dim is None:
+            self.dim = dim
+        elif self.dim != dim:
+            self.dim = dim
+            if len(self.geometry_objects_list) == len(self.temporary_geometry_object_list):
+                self.geometry_objects_list = list(self.temporary_geometry_object_list)
+        if len(self.temporary_geometry_object_list) != len(self.geometry_objects_list):
+            self.temporary_geometry_object_list = [0 for _ in range(0, len(self.geometry_objects_list))]
 
     def handle_on_click_scaling_button(self):
         if self.command != Command.NONE:
@@ -189,14 +192,7 @@ class MainGui:
         scale_button_done.pack()
 
     def handle_on_slider_translation_slide(self, value, dim):
-        if self.dim is None:
-            self.dim = dim
-        elif self.dim != dim:
-            self.dim = dim
-            if len(self.geometry_objects_list) == len(self.temporary_geometry_object_list):
-                self.geometry_objects_list = list(self.temporary_geometry_object_list)
-        if len(self.temporary_geometry_object_list) != len(self.geometry_objects_list):
-            self.temporary_geometry_object_list = [0 for _ in range(0, len(self.geometry_objects_list))]
+        self.valid_temporary_geometry_object_list(dim)
         for i in range(0, len(self.geometry_objects_list)):
             geometry_object = self.geometry_objects_list[i]
             translated_geometry_object = GraphicAlgorithms.get_translated_geometry_object(geometry_object, int(value), dim)
