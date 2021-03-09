@@ -17,7 +17,7 @@ class MainGui:
         # Screen
         self.window = tk.Tk()
         # self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
-        self.window.geometry(f"{1000}x{600}")
+        self.window.geometry(f"{Metrics.canvas_width}x{600}")
         self.window.title("Paint")
         self.configure_widgets()
         self.bind_events()
@@ -90,6 +90,14 @@ class MainGui:
                                         padx=Metrics.paddingMenuButtonsX,
                                         pady=Metrics.paddingMenuButtonsY,
                                         ).pack(side="left")
+        self.rotation_button = tk.Button(self.menu_frame,
+                                         text="Rotação",
+                                         width=Metrics.buttonSize,
+                                         relief="raised",
+                                         command=self.handle_on_click_rotation_button,
+                                         padx=Metrics.paddingMenuButtonsX,
+                                         pady=Metrics.paddingMenuButtonsY,
+                                         ).pack(side="left")
         self.clean_button = tk.Button(self.menu_frame,
                                       text="Clean Screen",
                                       width=Metrics.buttonSize,
@@ -99,7 +107,38 @@ class MainGui:
                                       pady=Metrics.paddingMenuButtonsY,
                                       ).pack()
 
-    def handle_on_click_confirm_scaling(self, scaling_dialog):
+    def handle_on_click_rotation_button(self):
+        if self.command != Command.NONE:
+            messagebox.showerror(title="Error", message="Desmarque todos os botoes para utilizar este comando")
+            return
+        scaling_dialog = tk.Toplevel(self.window)
+        scaling_dialog.title("Rotação")
+        scaling_dialog.geometry("200x100")
+        tk.Label(scaling_dialog,
+                 text="Ajuste o valor de rotação abaixo").pack()
+        rotation_slider = tk.Scale(scaling_dialog,
+                                   from_=0,
+                                   to=360,
+                                   orient=tk.HORIZONTAL,
+                                   length="200",
+                                   command=lambda value: self.handle_on_slider_rotation_slide(value))
+        rotation_slider.set(0)
+        rotation_slider.pack()
+        scale_button_done = tk.Button(scaling_dialog,
+                                      text="Confirmar Rotação",
+                                      command=lambda: self.handle_on_click_confirm_transformation(scaling_dialog))
+
+        scale_button_done.pack()
+
+    def handle_on_slider_rotation_slide(self, value):
+        self.temporary_geometry_object_list = []
+        for geometry_object in self.geometry_objects_list:
+            rotated_object = GraphicAlgorithms.get_rotated_geometry_object(geometry_object, int(value))
+            self.temporary_geometry_object_list.append(rotated_object)
+        self.canvas.delete("all")
+        self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)
+
+    def handle_on_click_confirm_transformation(self, scaling_dialog):
         scaling_dialog.destroy()
         self.dim = None
         self.render_geometry_objects_list_on_screen_and_overwrite_old_list(list(self.temporary_geometry_object_list))
@@ -154,7 +193,7 @@ class MainGui:
         scale_y_slider.pack()
         scale_button_done = tk.Button(scaling_dialog,
                                       text="Confirmar Escala",
-                                      command=lambda: self.handle_on_click_confirm_scaling(scaling_dialog))
+                                      command=lambda: self.handle_on_click_confirm_transformation(scaling_dialog))
 
         scale_button_done.pack()
 
@@ -187,7 +226,7 @@ class MainGui:
         translate_y_slider.pack()
         scale_button_done = tk.Button(translation_dialog,
                                       text="Confirmar Translação",
-                                      command=lambda: self.handle_on_click_confirm_scaling(translation_dialog))
+                                      command=lambda: self.handle_on_click_confirm_transformation(translation_dialog))
 
         scale_button_done.pack()
 
@@ -195,7 +234,8 @@ class MainGui:
         self.valid_temporary_geometry_object_list(dim)
         for i in range(0, len(self.geometry_objects_list)):
             geometry_object = self.geometry_objects_list[i]
-            translated_geometry_object = GraphicAlgorithms.get_translated_geometry_object(geometry_object, int(value), dim)
+            translated_geometry_object = GraphicAlgorithms.get_translated_geometry_object(geometry_object, int(value),
+                                                                                          dim)
             self.temporary_geometry_object_list[i] = translated_geometry_object
         self.canvas.delete("all")
         self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)

@@ -1,4 +1,5 @@
 import math
+from math import cos, sin
 
 from Metrics import Metrics
 from Geometry import *
@@ -230,6 +231,35 @@ class GraphicAlgorithms:
             point2 = Point(geometry_object.point2.x, point2_y)
 
         return GeometryObject(geometry_object.type, point1, point2)
+
+    @staticmethod
+    def get_rotated_geometry_object(geometry_object, angle):
+        if geometry_object.type == GeometryType.bresenhamCircle:
+            return geometry_object
+        center_x, center_y = GraphicAlgorithms.get_line_center(geometry_object)
+        x1, x2, y1, y2 = GraphicAlgorithms.unwrap_points(geometry_object.point1, geometry_object.point2)
+        x1 = x1 - center_x
+        x2 = x2 - center_x
+        y1 = y1 - center_y
+        y2 = y2 - center_y
+        radians = math.radians(angle)
+        point1_x = round(x1*cos(radians) - y1*sin(radians))
+        point1_y = round(x1*sin(radians) + y1*cos(radians))
+
+        point2_x = round(x2*cos(radians) - y2*sin(radians))
+        point2_y = round(x2*sin(radians) + y2*cos(radians))
+
+        point1_x = point1_x + center_x
+        point1_y = point1_y + center_y
+
+        point2_x = point2_x + center_x
+        point2_y = point2_y + center_y
+
+        point1 = Point(point1_x, point1_y)
+        point2 = Point(point2_x, point2_y)
+
+        return GeometryObject(geometry_object.type, point1, point2)
+
 
     @staticmethod
     def get_line_center(geometry_object):
