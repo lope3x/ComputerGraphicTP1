@@ -6,16 +6,13 @@ from Metrics import Metrics
 
 class ToggleButton:
 
-    def __init__(self, master, text, command, algorithm, cleanButtons):
+    def __init__(self, master, text, command, algorithm, clean_buttons):
         self.master = master
         self.isPressed = False
         self.text = text
         self.command = command
         self.algorithm = algorithm
-        self.cleanButtons = cleanButtons
-        self.configureView()
-
-    def configureView(self):
+        self.cleanButtons = clean_buttons
         self.btn = tk.Button(self.master,
                              text=self.text,
                              width=Metrics.buttonSize,

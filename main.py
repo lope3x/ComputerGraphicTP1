@@ -17,7 +17,7 @@ class MainGui:
         # Screen
         self.window = tk.Tk()
         # self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
-        self.window.geometry(f"{900}x{600}")
+        self.window.geometry(f"{1000}x{600}")
         self.window.title("Paint")
         self.configure_widgets()
         self.bind_events()
@@ -29,6 +29,8 @@ class MainGui:
         self.firstPoint = None
         self.secondPoint = None
         self.geometry_objects_list = []
+        self.temporary_geometry_object_list = []
+        self.dim = None
 
         self.canvas.pack()
         self.window.mainloop()
@@ -37,8 +39,8 @@ class MainGui:
         self.configure_menu()
         self.canvas = tk.Canvas(self.window,
                                 bg="white",
-                                width=900,
-                                height=600)
+                                width=1000,
+                                height=570)
         self.canvas.pack()
 
     def configure_menu(self):
@@ -51,27 +53,27 @@ class MainGui:
                                        text="DDA",
                                        command=self.handle_on_click_menu_button,
                                        algorithm=Command.DDA_LINE,
-                                       cleanButtons=self.clean_toggled_buttons)
+                                       clean_buttons=self.clean_toggled_buttons)
         self.bresenham_line_button = ToggleButton(self.menu_frame,
                                                   text="BresenhamLine",
                                                   command=self.handle_on_click_menu_button,
                                                   algorithm=Command.BRESENHAM_LINE,
-                                                  cleanButtons=self.clean_toggled_buttons)
+                                                  clean_buttons=self.clean_toggled_buttons)
         self.bresenham_circle_button = ToggleButton(self.menu_frame,
                                                     text="BresenhamCircle",
                                                     command=self.handle_on_click_menu_button,
                                                     algorithm=Command.BRESENHAM_CIRCLE,
-                                                    cleanButtons=self.clean_toggled_buttons)
+                                                    clean_buttons=self.clean_toggled_buttons)
         self.cohen_sutherland_button = ToggleButton(self.menu_frame,
                                                     text="Recorte CS",
                                                     command=self.handle_on_click_menu_button,
                                                     algorithm=Command.COHEN_SUTHERLAND_CLIP,
-                                                    cleanButtons=self.clean_toggled_buttons)
+                                                    clean_buttons=self.clean_toggled_buttons)
         self.liang_barsky_button = ToggleButton(self.menu_frame,
                                                 text="Recorte LB",
                                                 command=self.handle_on_click_menu_button,
                                                 algorithm=Command.LIANG_BARSKY_CLIP,
-                                                cleanButtons=self.clean_toggled_buttons)
+                                                clean_buttons=self.clean_toggled_buttons)
         self.translation_button = tk.Button(self.menu_frame,
                                             text="Translação",
                                             width=Metrics.buttonSize,
@@ -80,6 +82,14 @@ class MainGui:
                                             padx=Metrics.paddingMenuButtonsX,
                                             pady=Metrics.paddingMenuButtonsY,
                                             ).pack(side="left")
+        self.scaling_button = tk.Button(self.menu_frame,
+                                        text="Escala",
+                                        width=Metrics.buttonSize,
+                                        relief="raised",
+                                        command=self.handle_on_click_scaling_button,
+                                        padx=Metrics.paddingMenuButtonsX,
+                                        pady=Metrics.paddingMenuButtonsY,
+                                        ).pack(side="left")
         self.clean_button = tk.Button(self.menu_frame,
                                       text="Clean Screen",
                                       width=Metrics.buttonSize,
@@ -88,6 +98,71 @@ class MainGui:
                                       padx=Metrics.paddingMenuButtonsX,
                                       pady=Metrics.paddingMenuButtonsY,
                                       ).pack()
+
+    def handle_on_click_confirm_scaling(self, scaling_dialog):
+        scaling_dialog.destroy()
+        self.dim = None
+        self.render_geometry_objects_list_on_screen_and_overwrite_old_list(list(self.temporary_geometry_object_list))
+
+    def handle_on_slider_scaling_slide(self, value, dim):
+        if self.dim is None:
+            self.dim = dim
+        elif self.dim != dim:
+            self.dim = dim
+            self.geometry_objects_list = list(self.temporary_geometry_object_list)
+        if len(self.temporary_geometry_object_list) != len(self.geometry_objects_list):
+            self.temporary_geometry_object_list = [0 for _ in range(0, len(self.geometry_objects_list))]
+        for i in range(0, len(self.geometry_objects_list)):
+            geometry_object = self.geometry_objects_list[i]
+            scaled_geometry_object = self.get_scaled_object(geometry_object, float(value), dim)
+            self.temporary_geometry_object_list[i] = scaled_geometry_object
+        self.canvas.delete("all")
+        self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)
+
+    def get_scaled_object(self, geometry_object, value, dim):
+        if geometry_object.type == GeometryType.bresenhamCircle:
+            radius = round(geometry_object.radius*value)
+            return GeometryObject(geometry_object.type, point1=geometry_object.point1, radius=radius)
+        if dim == "x":
+            point1 = Point(round(geometry_object.point1.x * value), geometry_object.point1.y)
+            point2 = Point(round(geometry_object.point2.x * value), geometry_object.point2.y)
+        else:
+            point1 = Point(geometry_object.point1.x, round(geometry_object.point1.y * value))
+            point2 = Point(geometry_object.point2.x, round(geometry_object.point2.y * value))
+
+        return GeometryObject(geometry_object.type, point1, point2)
+
+    def handle_on_click_scaling_button(self):
+        scaling_dialog = tk.Toplevel(self.window)
+        scaling_dialog.title("Escala")
+        scaling_dialog.geometry("200x200")
+        tk.Label(scaling_dialog,
+                 text="Ajuste o valor de escala abaixo").pack()
+        tk.Label(scaling_dialog, text="Escala em X").pack()
+        scale_x_slider = tk.Scale(scaling_dialog,
+                                  from_=0.01,
+                                  to=2,
+                                  orient=tk.HORIZONTAL,
+                                  length="200",
+                                  resolution=0.01,
+                                  command=lambda value: self.handle_on_slider_scaling_slide(value, "x"))
+        scale_x_slider.set(1)
+        scale_x_slider.pack()
+        tk.Label(scaling_dialog, text="Escala em Y").pack()
+        scale_y_slider = tk.Scale(scaling_dialog,
+                                  from_=0.01,
+                                  to=2,
+                                  orient=tk.HORIZONTAL,
+                                  length="200",
+                                  resolution=0.01,
+                                  command=lambda value: self.handle_on_slider_scaling_slide(value, "y"))
+        scale_y_slider.set(1)
+        scale_y_slider.pack()
+        scale_button_done = tk.Button(scaling_dialog,
+                                      text="Confirmar Escala",
+                                      command=lambda: self.handle_on_click_confirm_scaling(scaling_dialog))
+
+        scale_button_done.pack()
 
     def handle_on_click_translation_button(self):
         translation_dialog = tk.Toplevel(self.window)
@@ -115,12 +190,12 @@ class MainGui:
         new_geometry_object_list = []
         for geometry_object in self.geometry_objects_list:
             new_geometry_object_list.append(self.get_translate_geometry_object(geometry_object, x, y))
-        self.render_geometry_objects_list_on_screen(new_geometry_object_list)
+        self.render_geometry_objects_list_on_screen_and_overwrite_old_list(new_geometry_object_list)
 
-    def render_geometry_objects_list_on_screen(self, new_geometry_object_list):
+    def render_geometry_objects_list_on_screen_and_overwrite_old_list(self, new_geometry_object_list):
         self.clean_screen()
         self.geometry_objects_list = new_geometry_object_list
-        self.render_geometry_objects_on_screen()
+        self.render_geometry_objects_on_screen(self.geometry_objects_list)
 
     def get_translate_geometry_object(self, geometry_object, tx, ty):
         if geometry_object.type == GeometryType.bresenhamCircle:
@@ -138,9 +213,10 @@ class MainGui:
     def clean_screen(self):
         self.canvas.delete("all")
         self.geometry_objects_list.clear()
+        self.temporary_geometry_object_list.clear()
 
-    def render_geometry_objects_on_screen(self):
-        for geometryObject in self.geometry_objects_list:
+    def render_geometry_objects_on_screen(self, geometry_objects_list):
+        for geometryObject in geometry_objects_list:
             if geometryObject.type == GeometryType.dddLine:
                 self.ga.draw_dda_line(geometryObject.point1, geometryObject.point2)
             elif geometryObject.type == GeometryType.bresenhamLine:
@@ -194,7 +270,7 @@ class MainGui:
                     new_geometry_object_list.append(new_geometry_object)
                 except:
                     pass
-        self.render_geometry_objects_list_on_screen(new_geometry_object_list)
+        self.render_geometry_objects_list_on_screen_and_overwrite_old_list(new_geometry_object_list)
 
     def compute_new_clipped_line(self, geometry_object, algorithm):
         x_max, x_min, y_max, y_min = self.get_clipping_limits()
