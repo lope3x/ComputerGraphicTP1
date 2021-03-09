@@ -114,23 +114,10 @@ class MainGui:
             self.temporary_geometry_object_list = [0 for _ in range(0, len(self.geometry_objects_list))]
         for i in range(0, len(self.geometry_objects_list)):
             geometry_object = self.geometry_objects_list[i]
-            scaled_geometry_object = self.get_scaled_object(geometry_object, float(value), dim)
+            scaled_geometry_object = GraphicAlgorithms.get_scaled_object(geometry_object, float(value), dim)
             self.temporary_geometry_object_list[i] = scaled_geometry_object
         self.canvas.delete("all")
         self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)
-
-    def get_scaled_object(self, geometry_object, value, dim):
-        if geometry_object.type == GeometryType.bresenhamCircle:
-            radius = round(geometry_object.radius*value)
-            return GeometryObject(geometry_object.type, point1=geometry_object.point1, radius=radius)
-        if dim == "x":
-            point1 = Point(round(geometry_object.point1.x * value), geometry_object.point1.y)
-            point2 = Point(round(geometry_object.point2.x * value), geometry_object.point2.y)
-        else:
-            point1 = Point(geometry_object.point1.x, round(geometry_object.point1.y * value))
-            point2 = Point(geometry_object.point2.x, round(geometry_object.point2.y * value))
-
-        return GeometryObject(geometry_object.type, point1, point2)
 
     def handle_on_click_scaling_button(self):
         scaling_dialog = tk.Toplevel(self.window)
@@ -189,22 +176,13 @@ class MainGui:
     def translate_geometry_objects(self, x, y):
         new_geometry_object_list = []
         for geometry_object in self.geometry_objects_list:
-            new_geometry_object_list.append(self.get_translate_geometry_object(geometry_object, x, y))
+            new_geometry_object_list.append(GraphicAlgorithms.get_translated_geometry_object(geometry_object, x, y))
         self.render_geometry_objects_list_on_screen_and_overwrite_old_list(new_geometry_object_list)
 
     def render_geometry_objects_list_on_screen_and_overwrite_old_list(self, new_geometry_object_list):
         self.clean_screen()
         self.geometry_objects_list = new_geometry_object_list
         self.render_geometry_objects_on_screen(self.geometry_objects_list)
-
-    def get_translate_geometry_object(self, geometry_object, tx, ty):
-        if geometry_object.type == GeometryType.bresenhamCircle:
-            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
-            return GeometryObject(geometry_object.type, point1, radius=geometry_object.radius)
-        else:
-            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
-            point2 = Point(geometry_object.point2.x + tx, geometry_object.point2.y + ty)
-            return GeometryObject(geometry_object.type, point1, point2)
 
     def handle_on_click_menu_button(self, algorithm):
         self.command = algorithm

@@ -1,6 +1,6 @@
 import math
 
-from Geometry import Point
+from Geometry import *
 
 
 class GraphicAlgorithms:
@@ -205,6 +205,30 @@ class GraphicAlgorithms:
     @staticmethod
     def compute_distance_between_two_points(point1, point2):
         return math.sqrt(math.pow(point2.x - point1.x, 2) + math.pow(point2.y - point1.y, 2))
+
+    @staticmethod
+    def get_scaled_object(geometry_object, value, dim):
+        if geometry_object.type == GeometryType.bresenhamCircle:
+            radius = round(geometry_object.radius*value)
+            return GeometryObject(geometry_object.type, point1=geometry_object.point1, radius=radius)
+        if dim == "x":
+            point1 = Point(round(geometry_object.point1.x * value), geometry_object.point1.y)
+            point2 = Point(round(geometry_object.point2.x * value), geometry_object.point2.y)
+        else:
+            point1 = Point(geometry_object.point1.x, round(geometry_object.point1.y * value))
+            point2 = Point(geometry_object.point2.x, round(geometry_object.point2.y * value))
+
+        return GeometryObject(geometry_object.type, point1, point2)
+
+    @staticmethod
+    def get_translated_geometry_object(geometry_object, tx, ty):
+        if geometry_object.type == GeometryType.bresenhamCircle:
+            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
+            return GeometryObject(geometry_object.type, point1, radius=geometry_object.radius)
+        else:
+            point1 = Point(geometry_object.point1.x + tx, geometry_object.point1.y + ty)
+            point2 = Point(geometry_object.point2.x + tx, geometry_object.point2.y + ty)
+            return GeometryObject(geometry_object.type, point1, point2)
 
 
 if __name__ == '__main__':
