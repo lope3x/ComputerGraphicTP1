@@ -16,6 +16,12 @@ class GeometryObject:
 
 
 class GeometryType(Enum):
-    dddLine = 0
-    bresenhamLine = 1
-    bresenhamCircle = 2
+    ddd_Line = 0
+    bresenham_Line = 1
+    bresenham_Circle = 2
+
+
+class ReflectionType(Enum):
+    x_axis = 0
+    y_axis = 1
+    both_axis = 2

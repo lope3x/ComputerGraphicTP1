@@ -210,7 +210,7 @@ class GraphicAlgorithms:
 
     @staticmethod
     def get_scaled_object(geometry_object, value, dim):
-        if geometry_object.type == GeometryType.bresenhamCircle:
+        if geometry_object.type == GeometryType.bresenham_Circle:
             radius = round(geometry_object.radius * value)
             return GeometryObject(geometry_object.type, point1=geometry_object.point1, radius=radius)
         if dim == "x":
@@ -234,7 +234,7 @@ class GraphicAlgorithms:
 
     @staticmethod
     def get_rotated_geometry_object(geometry_object, angle):
-        if geometry_object.type == GeometryType.bresenhamCircle:
+        if geometry_object.type == GeometryType.bresenham_Circle:
             return geometry_object
         center_x, center_y = GraphicAlgorithms.get_line_center(geometry_object)
         x1, x2, y1, y2 = GraphicAlgorithms.unwrap_points(geometry_object.point1, geometry_object.point2)
@@ -269,7 +269,7 @@ class GraphicAlgorithms:
 
     @staticmethod
     def get_translated_geometry_object(geometry_object, value, dim):
-        if geometry_object.type == GeometryType.bresenhamCircle:
+        if geometry_object.type == GeometryType.bresenham_Circle:
             if dim == "x":
                 point1 = Point(geometry_object.point1.x + value, geometry_object.point1.y)
             else:
@@ -282,6 +282,21 @@ class GraphicAlgorithms:
             else:
                 point1 = Point(geometry_object.point1.x, geometry_object.point1.y + value)
                 point2 = Point(geometry_object.point2.x, geometry_object.point2.y + value)
+            return GeometryObject(geometry_object.type, point1, point2)
+
+    @staticmethod
+    def get_reflected_geometry_object(geometry_object, reflection_type):
+        if reflection_type == ReflectionType.x_axis:
+            point1 = Point(geometry_object.point1.x, -geometry_object.point1.y+Metrics.canvas_height)
+            point2 = Point(geometry_object.point2.x, -geometry_object.point2.y+Metrics.canvas_height)
+            return GeometryObject(geometry_object.type, point1, point2)
+        elif reflection_type == ReflectionType.y_axis:
+            point1 = Point(-geometry_object.point1.x+Metrics.canvas_width, geometry_object.point1.y)
+            point2 = Point(-geometry_object.point2.x+Metrics.canvas_width, geometry_object.point2.y)
+            return GeometryObject(geometry_object.type, point1, point2)
+        else:
+            point1 = Point(-geometry_object.point1.x+Metrics.canvas_width, -geometry_object.point1.y+Metrics.canvas_height)
+            point2 = Point(-geometry_object.point2.x+Metrics.canvas_width, -geometry_object.point2.y+Metrics.canvas_height)
             return GeometryObject(geometry_object.type, point1, point2)
 
 
