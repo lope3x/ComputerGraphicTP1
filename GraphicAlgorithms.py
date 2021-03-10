@@ -243,11 +243,11 @@ class GraphicAlgorithms:
         y1 = y1 - center_y
         y2 = y2 - center_y
         radians = math.radians(angle)
-        point1_x = round(x1*cos(radians) - y1*sin(radians))
-        point1_y = round(x1*sin(radians) + y1*cos(radians))
+        point1_x = round(x1 * cos(radians) - y1 * sin(radians))
+        point1_y = round(x1 * sin(radians) + y1 * cos(radians))
 
-        point2_x = round(x2*cos(radians) - y2*sin(radians))
-        point2_y = round(x2*sin(radians) + y2*cos(radians))
+        point2_x = round(x2 * cos(radians) - y2 * sin(radians))
+        point2_y = round(x2 * sin(radians) + y2 * cos(radians))
 
         point1_x = point1_x + center_x
         point1_y = point1_y + center_y
@@ -259,7 +259,6 @@ class GraphicAlgorithms:
         point2 = Point(point2_x, point2_y)
 
         return GeometryObject(geometry_object.type, point1, point2)
-
 
     @staticmethod
     def get_line_center(geometry_object):
@@ -287,16 +286,18 @@ class GraphicAlgorithms:
     @staticmethod
     def get_reflected_geometry_object(geometry_object, reflection_type):
         if reflection_type == ReflectionType.x_axis:
-            point1 = Point(geometry_object.point1.x, -geometry_object.point1.y+Metrics.canvas_height)
-            point2 = Point(geometry_object.point2.x, -geometry_object.point2.y+Metrics.canvas_height)
+            point1 = Point(geometry_object.point1.x, -geometry_object.point1.y + Metrics.canvas_height)
+            point2 = Point(geometry_object.point2.x, -geometry_object.point2.y + Metrics.canvas_height)
             return GeometryObject(geometry_object.type, point1, point2)
         elif reflection_type == ReflectionType.y_axis:
-            point1 = Point(-geometry_object.point1.x+Metrics.canvas_width, geometry_object.point1.y)
-            point2 = Point(-geometry_object.point2.x+Metrics.canvas_width, geometry_object.point2.y)
+            point1 = Point(-geometry_object.point1.x + Metrics.canvas_width, geometry_object.point1.y)
+            point2 = Point(-geometry_object.point2.x + Metrics.canvas_width, geometry_object.point2.y)
             return GeometryObject(geometry_object.type, point1, point2)
         else:
-            point1 = Point(-geometry_object.point1.x+Metrics.canvas_width, -geometry_object.point1.y+Metrics.canvas_height)
-            point2 = Point(-geometry_object.point2.x+Metrics.canvas_width, -geometry_object.point2.y+Metrics.canvas_height)
+            point1 = Point(-geometry_object.point1.x + Metrics.canvas_width,
+                           -geometry_object.point1.y + Metrics.canvas_height)
+            point2 = Point(-geometry_object.point2.x + Metrics.canvas_width,
+                           -geometry_object.point2.y + Metrics.canvas_height)
             return GeometryObject(geometry_object.type, point1, point2)
 
 
