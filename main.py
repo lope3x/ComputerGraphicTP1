@@ -124,7 +124,7 @@ class MainGui:
                 reflected_object = GraphicAlgorithms.get_reflected_geometry_object(geometry_object, type)
                 self.temporary_geometry_object_list.append(reflected_object)
         self.canvas.delete("all")
-        self.render_geometry_objects_on_screen(list(self.temporary_geometry_object_list))
+        self.render_geometry_objects_list_on_screen_and_overwrite_old_list(list(self.temporary_geometry_object_list))
 
     def handle_on_click_reflection_button(self):
         if self.command != Command.NONE:
@@ -352,10 +352,14 @@ class MainGui:
             self.render_geometry_objects_on_screen(self.geometry_objects_list)
 
     def draw_rect(self, point1, point2, point3, point4):
-        self.ga.draw_dda_line(point1, point2)
-        self.ga.draw_dda_line(point2, point3)
-        self.ga.draw_dda_line(point3, point4)
-        self.ga.draw_dda_line(point4, point1)
+        self.canvas.create_line(point1.x, point1.y, point2.x, point2.y)
+        self.canvas.create_line(point2.x, point2.y, point3.x, point3.y)
+        self.canvas.create_line(point3.x, point3.y, point4.x, point4.y)
+        self.canvas.create_line(point4.x, point4.y, point1.x, point1.y)
+        # self.ga.draw_dda_line(point1, point2)
+        # self.ga.draw_dda_line(point2, point3)
+        # self.ga.draw_dda_line(point3, point4)
+        # self.ga.draw_dda_line(point4, point1)
 
     def get_preview_clipped_area_limits(self):
         x_min = self.clip_first_point.x if self.clip_first_point.x < self.clip_second_point.x else self.clip_second_point.x
