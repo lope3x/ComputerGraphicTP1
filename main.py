@@ -7,7 +7,6 @@ from GraphicAlgorithms import GraphicAlgorithms
 from Metrics import Metrics
 from Geometry import *
 from ToggleButton import ToggleButton
-from win32api import GetSystemMetrics
 
 
 # noinspection PyAttributeOutsideInit
@@ -17,8 +16,9 @@ class MainGui:
         # Screen
         self.window = tk.Tk()
         # self.window.geometry(f"{GetSystemMetrics(0)}x{GetSystemMetrics(1)}")
-        self.window.geometry(f"{Metrics.canvas_width}x{600}")
+        self.window.geometry(f"{Metrics.canvas_width}x{Metrics.canvas_height}")
         self.window.title("Paint")
+        self.window.iconbitmap('icon.ico')
         self.configure_widgets()
         self.bind_events()
 
@@ -146,8 +146,8 @@ class MainGui:
                   command=lambda: self.handle_on_click_reflection_type_button(ReflectionType.both_axis)).pack(fill=X)
 
         tk.Button(reflection_dialog,
-                  text="Confirmar Rotação",
-                  command=lambda: self.handle_on_click_confirm_transformation(reflection_dialog)).pack(fill=X)
+                  text="Confirmar Reflexão",
+                  command=lambda: reflection_dialog.destroy()).pack(fill=X)
 
     def handle_on_click_rotation_button(self):
         if self.command != Command.NONE:
@@ -180,8 +180,8 @@ class MainGui:
         self.canvas.delete("all")
         self.render_geometry_objects_on_screen(self.temporary_geometry_object_list)
 
-    def handle_on_click_confirm_transformation(self, scaling_dialog):
-        scaling_dialog.destroy()
+    def handle_on_click_confirm_transformation(self, transformation_dialog):
+        transformation_dialog.destroy()
         self.dim = None
         self.render_geometry_objects_list_on_screen_and_overwrite_old_list(list(self.temporary_geometry_object_list))
 
@@ -244,7 +244,7 @@ class MainGui:
             messagebox.showerror(title="Error", message="Desmarque todos os botoes para utilizar este comando")
             return
         translation_dialog = tk.Toplevel(self.window)
-        translation_dialog.title("Escala")
+        translation_dialog.title("Translação")
         translation_dialog.geometry("200x200")
         tk.Label(translation_dialog,
                  text="Mova os sliders para transladar").pack()
